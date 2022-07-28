@@ -2,6 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import url from "node:url";
 import axios from "axios";
+import { Octokit } from "octokit";
 type Data = {
   repoLink: string;
 };
@@ -15,10 +16,11 @@ type RepoInfo = {
   user: string;
   repoName: string;
 };
+const octokit = new Octokit();
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<RepoInfo>
+  res: NextApiResponse<any>
 ) {
   console.log(req.query);
   let link = req.query.link as string;
@@ -27,7 +29,17 @@ export default async function handler(
   if (type == PackageRegistries.npm) repoInfo = await npmToGithub(link);
   else repoInfo = await pypiToGitHub(link);
 
-  res.status(200).json(repoInfo);
+  const repoData = await octokit.request(
+    `GET /repos/${repoInfo.user}/${repoInfo.repoName}`,
+    {
+      owner: repoInfo.user,
+      repo: repoInfo.repoName,
+    }
+  );
+  const ownerInfo = await octokit.request(`GET /users/${repoInfo.user}`, {
+    username: repoInfo.user,
+  });
+  res.status(200).json({ repoData: repoData, ownerInfo: ownerInfo });
 }
 
 async function npmToGithub(link: string): Promise<RepoInfo> {
