@@ -24,10 +24,16 @@ export default async function handler(
 ) {
   console.log(req.query);
   let link = req.query.link as string;
-  let type = req.query.type as string;
+  let type = req.query.type as PackageRegistries;
   let repoInfo: RepoInfo;
-  if (type == PackageRegistries.npm) repoInfo = await npmToGithub(link);
-  else repoInfo = await pypiToGitHub(link);
+
+  switch (type) {
+    case PackageRegistries.npm:
+      repoInfo = await npmToGithub(link)
+      break;
+  case PackageRegistries.pypi:
+    repoInfo = await pypiToGitHub(link)
+  }
 
   const repoData = await octokit.request(
     `GET /repos/${repoInfo.user}/${repoInfo.repoName}`,
@@ -39,6 +45,7 @@ export default async function handler(
   const ownerInfo = await octokit.request(`GET /users/${repoInfo.user}`, {
     username: repoInfo.user,
   });
+  
   res.status(200).json({ repoData: repoData, ownerInfo: ownerInfo });
 }
 

@@ -13,7 +13,6 @@ import { useEffect, useState } from "react";
 import useSWR from "swr";
 
 const Repo: NextPage = () => {
-  const [isLoading, setIsLoading] = useState(true);
   const fetcher = (url: string) => axios.get(url).then((res) => res.data);
   const router = useRouter();
   const { data: response, error } = useSWR(
