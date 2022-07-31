@@ -1,6 +1,10 @@
 import axios from "axios";
+import { PackageRegistries } from "../pages/api/getRepo";
 
-export type PackageInfo = {
+export type PackageData = {
+  type: PackageRegistries;
+  packageName: string;
+  description:string;
   descriptionExists: boolean;
   versionReleaseCount: number;
   latestReleaseDate: Date;
@@ -11,9 +15,9 @@ export type PackageInfo = {
   gitUrl: string;
 };
 
-export async function getPackageInfoNpm(
+export async function getPackageDataNpm(
   packageName: string
-): Promise<PackageInfo> {
+): Promise<PackageData> {
   let registryURL = "https://registry.npmjs.com/" + packageName;
   let response: any = await axios.get(registryURL);
   let description = response.data.description;
@@ -29,7 +33,7 @@ export async function getPackageInfoNpm(
   }
   let dependencies: Array<string> = [];
   let latestVersion = response.data["dist-tags"].latest;
-  console.log("LATEST:", response.data.versions[latestVersion]);
+  // console.log("LATEST:", response.data.versions[latestVersion]);
   let dependencyCount = 0;
   if (response.data.versions[latestVersion].dependencies)
     Object.keys(response.data.versions[latestVersion].dependencies).forEach(
@@ -44,9 +48,12 @@ export async function getPackageInfoNpm(
     rawRepoUrl[rawRepoUrl.length - 1]
   }`;
   if (repoUrl.slice(-4) == ".git") repoUrl = repoUrl.slice(0, -4);
-  let packageData: PackageInfo = {
+  let packageData: PackageData = {
+    type: PackageRegistries.npm,
+    packageName: packageName,
+    description: description,
     descriptionExists: description.length > 10,
-    latestReleaseDate: latestRelease,
+    latestReleaseDate: new Date(latestRelease),
     originalReleaseDate: originalRelease,
     weeklyDownloads: weeklyDownloads,
     gitUrlExists: response.data.repository.url ? true : false,
@@ -57,12 +64,12 @@ export async function getPackageInfoNpm(
   return packageData;
 }
 
-export async function getPackageInfoPypi(
+export async function getPackageDataPypi(
   packageName: string
-): Promise<PackageInfo> {
+): Promise<PackageData> {
   let registryURL = `https://pypi.org/pypi/${packageName}/json`;
   let response: any = await axios.get(registryURL);
-  let description = response.data.info.description;
+  let description = response.data.info.summary;
   let releaseCount = Object.keys(response.data.releases).length;
   let latestRelease = response.data.urls[0].upload_time_iso_8601;
   let originalRelease = null;
@@ -75,9 +82,12 @@ export async function getPackageInfoPypi(
     response.data.info.project_urls["Source Code"] ||
     response.data.info.project_urls["Source"];
 
-  let packageData: PackageInfo = {
+  let packageData: PackageData = {
+    type: PackageRegistries.pypi,
+    packageName: packageName,
+    description:description,
     descriptionExists: description.length > 10,
-    latestReleaseDate: latestRelease,
+    latestReleaseDate: new Date(latestRelease),
     originalReleaseDate: originalRelease,
     weeklyDownloads: weeklyDownloads,
     gitUrlExists:
@@ -94,12 +104,12 @@ export async function getPackageInfoPypi(
   return packageData;
 }
 
-export async function getPackageInfoRubygems(
+export async function getPackageDataRubygems(
   packageName: string
-): Promise<PackageInfo> {
+): Promise<PackageData> {
   let registryURL = `https://rubygems.org/api/v1/gems/${packageName}.json`;
   let response: any = await axios.get(registryURL);
-  let description = response.data.info;
+  let description = response.data.Data;
   let releaseCount = -1;
   let latestRelease = response.data.version_created_at;
   let originalRelease = null;
@@ -107,9 +117,12 @@ export async function getPackageInfoRubygems(
 
   let repoUrl = response.data.metadata.source_code_uri;
 
-  let packageData: PackageInfo = {
+  let packageData: PackageData = {
+    type: PackageRegistries.rubygems,
+    packageName: packageName,
+    description:description,
     descriptionExists: description.length > 10,
-    latestReleaseDate: latestRelease,
+    latestReleaseDate: new Date(latestRelease),
     originalReleaseDate: originalRelease,
     weeklyDownloads: weeklyDownloads,
     gitUrlExists: response.data.metadata.source_code_uri ? true : false,

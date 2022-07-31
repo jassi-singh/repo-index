@@ -4,68 +4,63 @@ import url from "node:url";
 import axios from "axios";
 import { Octokit } from "octokit";
 import {
-  getPackageInfoNpm,
-  getPackageInfoPypi,
-  getPackageInfoRubygems,
-  PackageInfo,
+  getPackageDataNpm,
+  getPackageDataPypi,
+  getPackageDataRubygems,
+  PackageData,
 } from "../../utils/package";
-type Data = {
-  repoLink: string;
-};
+import { getRepoData, RepoData } from "../../utils/repo";
 
 export enum PackageRegistries {
   npm = "npm",
   pypi = "pypi",
   rubygems = "rubygems",
+  github = "github",
 }
 
-type RepoInfo = {
-  user: string;
-  repoName: string;
-  emails: Array<string>;
+export type RepoAnalysis = {
+  packageData: PackageData;
+  repoData: RepoData;
 };
-const octokit = new Octokit();
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<any>
 ) {
-  console.log(req.query);
-  let link = req.query.link as string;
-  let type = req.query.type as PackageRegistries;
-  let repoInfo = await getRepoInfo(req);
-
-  const repoDat = await octo.request(
-    `GET /repos/${repoInfo.user}/${repoInfo.repoName}`,
-    {
-      owner: repoInfo.user,
-      repo: repoInfo.repoName,
-    }
-  );
-  const ownerInfo = await octokit.request(`GET /users/${repoInfo.user}`, {
-    username: repoInfo.user,
-  });
-
-  res.status(200).json({ repoData: repoData, ownerInfo: ownerInfo });
+  let packageData: PackageData | undefined = await getPackageData(req);
+  let repoData: RepoData = {};
+  if (
+    packageData?.gitUrl !== undefined ||
+    req.query.type === PackageRegistries.github
+  ) {
+    const url: string =
+      packageData === undefined
+        ? (req.query.link as string)
+        : packageData?.gitUrl!;
+    repoData = await getRepoData(packageData?.gitUrl ?? url);
+  }
+  res.status(200).json({ packageData, repoData } as RepoAnalysis);
 }
 
-async function getRepoInfo(req: NextApiRequest): Promise<PackageInfo> {
-  let packageInfo: PackageInfo;
+async function getPackageData(
+  req: NextApiRequest
+): Promise<PackageData | undefined> {
+  let packageData: PackageData | undefined;
   let link = req.query.link as string;
   let type = req.query.type as PackageRegistries;
   let packageName = getPackageNameFromUrl(link);
   switch (type) {
     case PackageRegistries.npm:
-      packageInfo = await getPackageInfoNpm(packageName);
+      packageData = await getPackageDataNpm(packageName);
       break;
     case PackageRegistries.pypi:
-      packageInfo = await getPackageInfoPypi(packageName);
+      packageData = await getPackageDataPypi(packageName);
       break;
     case PackageRegistries.rubygems:
-      packageInfo = await getPackageInfoRubygems(packageName);
+      packageData = await getPackageDataRubygems(packageName);
       break;
   }
-  return packageInfo;
+  return packageData;
 }
 
 function getPackageNameFromUrl(link: string): string {
