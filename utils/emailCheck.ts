@@ -20,7 +20,7 @@ async function hostnameExists(hostname: string) {
   }
 }
 
-const validateEmail = (email: string) => {
+export const validateEmail = (email: string) => {
   return Boolean(
     String(email)
       .toLowerCase()
