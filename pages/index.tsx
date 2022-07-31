@@ -20,7 +20,14 @@ const Home: NextPage = () => {
   const [type, setType] = useState("npm");
   const router = useRouter();
   return (
-    <Flex minH={"100vh"} align={"center"} justify={"center"} bg={"grey.50"}>
+    <Flex
+      minH={"100vh"}
+      align={"center"}
+      justify={"center"}
+      bg={"grey.50"}
+      flexDirection="column"
+    >
+      <Heading mb={20}>Package scanner</Heading>
       <Container
         maxW={"xl"}
         bg={"white"}
