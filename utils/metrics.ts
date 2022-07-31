@@ -16,8 +16,8 @@
 // homepage? --- Should Exist
 
 export const forksCount = 10;
-export const starsCount = 1000;
-export const watchersCount = 200;
+export const starsCount = 500;
+export const watchersCount = 50;
 export const isForked = false;
 export const releaseVersionCount = 5;
 export const latestReleaseVersionTime = 6 // 6 months old max

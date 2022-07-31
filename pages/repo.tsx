@@ -28,6 +28,7 @@ import {
   FaGem,
   FaGithub,
   FaGlasses,
+  FaLink,
   FaNpm,
   FaPython,
   FaTag,
@@ -307,9 +308,14 @@ const Repo: NextPage = () => {
                       <TableRowComponent
                         icon={FaTags}
                         title="Release Count"
-                        value={response.packageData?.versionReleaseCount!==-1?response.packageData?.versionReleaseCount:"No Data"}
+                        value={
+                          response.packageData?.versionReleaseCount !== -1
+                            ? response.packageData?.versionReleaseCount
+                            : "No Data"
+                        }
                         status={
-                          response.packageData?.versionReleaseCount === undefined
+                          response.packageData?.versionReleaseCount ===
+                          undefined
                             ? false
                             : response.packageData?.versionReleaseCount <
                               releaseVersionCount
@@ -318,6 +324,7 @@ const Repo: NextPage = () => {
                       <TableRowComponent
                         icon={AiFillCode}
                         title="Source Code"
+                        link={response.packageData?.gitUrl}
                         value={
                           response.packageData?.gitUrlExists
                             ? "Exists"
@@ -363,9 +370,16 @@ const TableRowComponent = (params: TableRowParams) => {
       <Td>
         <HStack>
           <Icon fontSize={"2xl"} as={params.icon} color={"blue.300"} />
-          <Text fontSize={"md"} fontWeight={"bold"}>
-            {params.title}
-          </Text>
+          <HStack fontSize={"md"} fontWeight={"bold"}>
+            <Text>{params.title} </Text>
+            {params.link !== undefined ? (
+              <a href={params.link}>
+                <Icon as={FaLink} color="blue.300"/>
+              </a>
+            ) : (
+              <p></p>
+            )}
+          </HStack>
         </HStack>
       </Td>
       <Td>{params.value === undefined ? "No Data" : params.value}</Td>
@@ -386,6 +400,7 @@ type TableRowParams = {
   value: string | number | null;
   status: boolean;
   statusText?: string;
+  link?: string;
 };
 
 export default Repo;
