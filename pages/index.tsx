@@ -48,9 +48,10 @@ const Home: NextPage = () => {
               setType(e.target.value);
             }}
           >
-            <option value="github">Github</option>
             <option value="npm">npm</option>
+            <option value="github">Github</option>
             <option value="pypi">pypi</option>
+            <option value="rubygems">ruby</option>
           </Select>
           <Input
             variant={"solid"}

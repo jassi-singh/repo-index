@@ -121,7 +121,7 @@ export async function getPackageDataRubygems(
     type: PackageRegistries.rubygems,
     packageName: packageName,
     description:description,
-    descriptionExists: description.length > 10,
+    descriptionExists: description===undefined?false: description.length > 10,
     latestReleaseDate: new Date(latestRelease),
     originalReleaseDate: originalRelease,
     weeklyDownloads: weeklyDownloads,
