@@ -1,7 +1,7 @@
 import { Octokit } from "octokit";
 
 const octokit = new Octokit({
-  auth: process.env.AUTH,
+  auth: process.env.auth,
 });
 
 export type RepoData = {
@@ -24,11 +24,11 @@ export async function getRepoData(gitUrl: string) {
   ).data;
   let repoData: RepoData = {
     readmeSize: 1,
-    stars: repo.stargazers_count,
-    watchers: repo.subscribers_count,
-    isForked: repo.fork,
-    forksCount: repo.forks_count,
-    description: repo.description,
+    stars: repo?.stargazers_count,
+    watchers: repo?.subscribers_count,
+    isForked: repo?.fork,
+    forksCount: repo?.forks_count,
+    description: repo?.description,
     repoName: url.pathname.split("/")[1],
   };
   return repoData;

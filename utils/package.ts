@@ -4,6 +4,7 @@ import { PackageRegistries } from "../pages/api/getRepo";
 export type PackageData = {
   type: PackageRegistries;
   packageName: string;
+  version: string;
   description: string;
   descriptionExists: boolean;
   versionReleaseCount: number;
@@ -50,6 +51,7 @@ export async function getPackageDataNpm(
   if (repoUrl.slice(-4) == ".git") repoUrl = repoUrl.slice(0, -4);
   let packageData: PackageData = {
     type: PackageRegistries.npm,
+    version: latestVersion,
     packageName: packageName,
     description: description,
     descriptionExists: description.length > 10,
@@ -91,6 +93,7 @@ export async function getPackageDataPypi(
   let packageData: PackageData = {
     type: PackageRegistries.pypi,
     packageName: packageName,
+    version: response.data.info.version,
     description: description,
     descriptionExists: description.length > 10,
     latestReleaseDate: new Date(latestRelease),
@@ -126,6 +129,7 @@ export async function getPackageDataRubygems(
   let packageData: PackageData = {
     type: PackageRegistries.rubygems,
     packageName: packageName,
+    version: response.data.version,
     description: description,
     descriptionExists:
       description === undefined ? false : description.length > 10,

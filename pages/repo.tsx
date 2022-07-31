@@ -22,6 +22,7 @@ import {
   Tbody,
   Td,
   Tfoot,
+  Tooltip,
 } from "@chakra-ui/react";
 import {
   FaCalendar,
@@ -46,7 +47,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import useSWR, { Fetcher } from "swr";
-import { CheckCircleIcon, WarningIcon } from "@chakra-ui/icons";
+import { CheckCircleIcon, InfoIcon, WarningIcon } from "@chakra-ui/icons";
 import {
   checkIfOldEnough,
   checkIfOldVersion,
@@ -120,9 +121,10 @@ const Repo: NextPage = () => {
                     }
                     fontSize={"6xl"}
                   />
-                  <Heading pr={5} pl={5}>
+                  <Heading display={"flex"} pr={5} pl={5}>
                     {response.packageData?.packageName ??
                       response.repoData.repoName}
+                    <Text fontSize={16}>^{response.packageData?.version}</Text>
                   </Heading>
                   {/* <Select
                     w={"20"}
@@ -357,6 +359,80 @@ const Repo: NextPage = () => {
                 </TableContainer>
               </VStack>
             </GridItem>
+
+            <GridItem
+              colSpan={1}
+              border={"2px"}
+              borderRadius={5}
+              borderColor={"gray.200"}
+            >
+              <VStack>
+                <HStack
+                  width={"full"}
+                  bg={"gray.50"}
+                  display="flex"
+                  justifyContent="center"
+                  borderBottom={"2px"}
+                  borderColor={"gray.200"}
+                  px={10}
+                  py={5}
+                >
+                  <Icon color={"gray.500"} as={ImStatsDots} fontSize={"3xl"} />
+                  <Heading color={"gray.500"} fontSize={"2xl"} px="5">
+                    CVE Stats
+                  </Heading>
+                </HStack>
+                <TableContainer>
+                  <Table size={"md"} variant="striped">
+                    <Tbody>
+                      {response.cveData?.vulnerabilities?.length == 0 ? (
+                        <Text fontSize={20} height={100} display="flex" alignItems="center">
+                          No CVE's
+                        </Text>
+                      ) : (
+                        response.cveData?.vulnerabilities?.map((item: any) => {
+                          return (
+                            <Tr>
+                              <Td>
+                                <Tag
+                                  colorScheme={
+                                    item.cvssScore > 9
+                                      ? "red"
+                                      : item.cvssScore > 7
+                                      ? "red"
+                                      : item.cvssScore > 4
+                                      ? "orange"
+                                      : "blue"
+                                  }
+                                >
+                                  {item.cvssScore > 9
+                                    ? "Critical"
+                                    : item.cvssScore > 7
+                                    ? "High"
+                                    : item.cvssScore > 4
+                                    ? "Medium"
+                                    : "Low"}
+                                </Tag>
+                              </Td>
+                              <Td>
+                                <Text>{item.cwe}</Text>
+                              </Td>
+                              <Td>
+                                <Tooltip label={item.description}>
+                                  <Text as={"ins"} color={"blue.300"}>
+                                    description
+                                  </Text>
+                                </Tooltip>
+                              </Td>
+                            </Tr>
+                          );
+                        })
+                      )}
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+              </VStack>
+            </GridItem>
           </Grid>
         </Box>
       )}
@@ -374,7 +450,7 @@ const TableRowComponent = (params: TableRowParams) => {
             <Text>{params.title} </Text>
             {params.link !== undefined ? (
               <a href={params.link}>
-                <Icon as={FaLink} color="blue.300"/>
+                <Icon as={FaLink} color="blue.300" />
               </a>
             ) : (
               <p></p>

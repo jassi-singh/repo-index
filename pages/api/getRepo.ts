@@ -19,6 +19,8 @@ import {
   starsCount,
   watchersCount,
 } from "../../utils/metrics";
+import { getCVE, PackInfo } from "../../utils/cve";
+import { version } from "node:os";
 
 export enum PackageRegistries {
   npm = "npm",
@@ -31,6 +33,7 @@ export type RepoAnalysis = {
   packageData: PackageData;
   repoData: RepoData;
   analysis: { totalParams: number; goodParams: number };
+  cveData: any;
 };
 
 export default async function handler(
@@ -49,8 +52,17 @@ export default async function handler(
         : packageData?.gitUrl!;
     repoData = await getRepoData(packageData?.gitUrl ?? url);
   }
+  let cveData;
+  if (packageData) {
+    cveData = await getCVE({
+      packageName: packageData?.packageName,
+      version: packageData?.version,
+      registry: packageData?.type.toString(),
+    } as PackInfo);
+  }
+
   let analysis = {
-    totalParams: 9,
+    totalParams: 10,
     goodParams: 0,
   };
   if (repoData.forksCount !== undefined && repoData.forksCount >= forksCount)
@@ -84,7 +96,11 @@ export default async function handler(
     packageData.weeklyDownloads >= downloadsWeekly
   )
     analysis.goodParams++;
-  res.status(200).json({ packageData, repoData, analysis } as RepoAnalysis);
+  if(cveData?.vulnerabilities?.length==0) analysis.goodParams++;
+
+  res
+    .status(200)
+    .json({ packageData, repoData, analysis, cveData } as RepoAnalysis);
 }
 
 async function getPackageData(
