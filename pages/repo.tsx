@@ -386,47 +386,54 @@ const Repo: NextPage = () => {
                   <Table size={"md"} variant="striped">
                     <Tbody>
                       {response.cveData?.vulnerabilities?.length == 0 ? (
-                        <Text fontSize={20} height={100} display="flex" alignItems="center">
-                          No CVE's
+                        <Text
+                          fontSize={20}
+                          height={100}
+                          display="flex"
+                          alignItems="center"
+                        >
+                          {"No CVE's"}
                         </Text>
                       ) : (
-                        response.cveData?.vulnerabilities?.map((item: any) => {
-                          return (
-                            <Tr>
-                              <Td>
-                                <Tag
-                                  colorScheme={
-                                    item.cvssScore > 9
-                                      ? "red"
+                        response.cveData?.vulnerabilities?.map(
+                          (item: any, index: number) => {
+                            return (
+                              <Tr key={index}>
+                                <Td>
+                                  <Tag
+                                    colorScheme={
+                                      item.cvssScore > 9
+                                        ? "red"
+                                        : item.cvssScore > 7
+                                        ? "red"
+                                        : item.cvssScore > 4
+                                        ? "orange"
+                                        : "blue"
+                                    }
+                                  >
+                                    {item.cvssScore > 9
+                                      ? "Critical"
                                       : item.cvssScore > 7
-                                      ? "red"
+                                      ? "High"
                                       : item.cvssScore > 4
-                                      ? "orange"
-                                      : "blue"
-                                  }
-                                >
-                                  {item.cvssScore > 9
-                                    ? "Critical"
-                                    : item.cvssScore > 7
-                                    ? "High"
-                                    : item.cvssScore > 4
-                                    ? "Medium"
-                                    : "Low"}
-                                </Tag>
-                              </Td>
-                              <Td>
-                                <Text>{item.cwe}</Text>
-                              </Td>
-                              <Td>
-                                <Tooltip label={item.description}>
-                                  <Text as={"ins"} color={"blue.300"}>
-                                    description
-                                  </Text>
-                                </Tooltip>
-                              </Td>
-                            </Tr>
-                          );
-                        })
+                                      ? "Medium"
+                                      : "Low"}
+                                  </Tag>
+                                </Td>
+                                <Td>
+                                  <Text>{item.cwe}</Text>
+                                </Td>
+                                <Td>
+                                  <Tooltip label={item.description}>
+                                    <Text as={"ins"} color={"blue.300"}>
+                                      description
+                                    </Text>
+                                  </Tooltip>
+                                </Td>
+                              </Tr>
+                            );
+                          }
+                        )
                       )}
                     </Tbody>
                   </Table>
