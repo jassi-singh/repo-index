@@ -4,7 +4,7 @@ import { PackageRegistries } from "../pages/api/getRepo";
 export type PackageData = {
   type: PackageRegistries;
   packageName: string;
-  description:string;
+  description: string;
   descriptionExists: boolean;
   versionReleaseCount: number;
   latestReleaseDate: Date;
@@ -73,10 +73,16 @@ export async function getPackageDataPypi(
   let releaseCount = Object.keys(response.data.releases).length;
   let latestRelease = response.data.urls[0].upload_time_iso_8601;
   let originalRelease = null;
-  let response2: any = await axios.get(
-    `https://pypistats.org/api/packages/${packageName}/recent`
-  );
-  let weeklyDownloads = response2.data.data.last_week;
+  let response2;
+  try {
+    response2 = await axios.get(
+      `https://pypistats.org/api/packages/${packageName}/recent`
+    );
+    console.log("response2", response2);
+  } catch (error) {}
+
+  let weeklyDownloads =
+    response2 === undefined ? -1 : response2.data.data.last_week;
 
   let repoUrl =
     response.data.info.project_urls["Source Code"] ||
@@ -85,7 +91,7 @@ export async function getPackageDataPypi(
   let packageData: PackageData = {
     type: PackageRegistries.pypi,
     packageName: packageName,
-    description:description,
+    description: description,
     descriptionExists: description.length > 10,
     latestReleaseDate: new Date(latestRelease),
     originalReleaseDate: originalRelease,
@@ -120,8 +126,9 @@ export async function getPackageDataRubygems(
   let packageData: PackageData = {
     type: PackageRegistries.rubygems,
     packageName: packageName,
-    description:description,
-    descriptionExists: description===undefined?false: description.length > 10,
+    description: description,
+    descriptionExists:
+      description === undefined ? false : description.length > 10,
     latestReleaseDate: new Date(latestRelease),
     originalReleaseDate: originalRelease,
     weeklyDownloads: weeklyDownloads,

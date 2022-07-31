@@ -298,7 +298,7 @@ const Repo: NextPage = () => {
                         title="Weekly Downloads"
                         value={response.packageData?.weeklyDownloads}
                         status={
-                          response.packageData.weeklyDownloads === undefined
+                          response.packageData?.weeklyDownloads === undefined
                             ? false
                             : response.packageData?.weeklyDownloads <
                               downloadsWeekly
@@ -307,9 +307,9 @@ const Repo: NextPage = () => {
                       <TableRowComponent
                         icon={FaTags}
                         title="Release Count"
-                        value={response.packageData?.versionReleaseCount}
+                        value={response.packageData?.versionReleaseCount!==-1?response.packageData?.versionReleaseCount:"No Data"}
                         status={
-                          response.packageData.versionReleaseCount === undefined
+                          response.packageData?.versionReleaseCount === undefined
                             ? false
                             : response.packageData?.versionReleaseCount <
                               releaseVersionCount
