@@ -17,7 +17,7 @@ import styles from "../styles/Home.module.css";
 
 const Home: NextPage = () => {
   const [searchText, setSearchText] = useState("");
-  const [type, setType] = useState("github");
+  const [type, setType] = useState("npm");
   const router = useRouter();
   return (
     <Flex minH={"100vh"} align={"center"} justify={"center"} bg={"grey.50"}>
@@ -49,9 +49,9 @@ const Home: NextPage = () => {
             }}
           >
             <option value="npm">npm</option>
-            <option value="github">Github</option>
             <option value="pypi">pypi</option>
             <option value="rubygems">ruby</option>
+            <option value="github">github</option>
           </Select>
           <Input
             variant={"solid"}

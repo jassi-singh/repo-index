@@ -46,7 +46,12 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import useSWR, { Fetcher } from "swr";
 import { CheckCircleIcon, WarningIcon } from "@chakra-ui/icons";
-import { PackageRegistries, RepoAnalysis } from "./api/getRepo";
+import {
+  checkIfOldEnough,
+  checkIfOldVersion,
+  PackageRegistries,
+  RepoAnalysis,
+} from "./api/getRepo";
 import {
   downloadsWeekly,
   forksCount,
@@ -66,22 +71,6 @@ const Repo: NextPage = () => {
     `/api/getRepo?link=${router.query.url}&type=${router.query.type}`,
     fetcher
   );
-
-  const checkIfOldVersion = (latestReleaseDate: Date): boolean => {
-    const date1 = new Date(latestReleaseDate).getTime();
-    const date2 = new Date().getTime();
-    const diff = ((date2 - date1) / 60) * 60 * 24 * 30;
-    if (diff > latestReleaseVersionTime) return false;
-    else return true;
-  };
-
-  const checkIfOldEnough = (releaseDate: Date): boolean => {
-    const date1 = new Date(releaseDate).getTime();
-    const date2 = new Date().getTime();
-    const diff = ((date2 - date1) / 60) * 60 * 24 * 30 * 12;
-    if (diff > originalReleaseTime) return false;
-    else return true;
-  };
 
   return (
     <Flex align={"start"} bg={"grey.50"} m={10}>
@@ -134,7 +123,7 @@ const Repo: NextPage = () => {
                     {response.packageData?.packageName ??
                       response.repoData.repoName}
                   </Heading>
-                  <Select
+                  {/* <Select
                     w={"20"}
                     size="sm"
                     bg="gray.500"
@@ -144,7 +133,7 @@ const Repo: NextPage = () => {
                     <option>1.01</option>
                     <option>1.01</option>
                     <option>1.01</option>
-                  </Select>
+                  </Select> */}
                 </HStack>
                 <Text py={5}>
                   {response.packageData?.description ??
@@ -171,9 +160,24 @@ const Repo: NextPage = () => {
                   <Icon as={ImStatsBars} fontSize={"6xl"} />
                   <Heading px="5">Result</Heading>
                 </HStack>
-                <Tag size={"lg"} variant={"solid"} colorScheme="green">
-                  Safe to use
+                <Tag
+                  size={"lg"}
+                  variant={"solid"}
+                  colorScheme={
+                    response.analysis.goodParams ===
+                    response.analysis.totalParams
+                      ? "green"
+                      : "red"
+                  }
+                >
+                  {response.analysis.goodParams ===
+                  response.analysis.totalParams
+                    ? "Safe to use"
+                    : "Not Safe"}
                 </Tag>
+                <Text>
+                  {response.analysis.goodParams}/{response.analysis.totalParams}
+                </Text>
               </VStack>
             </GridItem>
           </Grid>
@@ -280,7 +284,10 @@ const Repo: NextPage = () => {
                 >
                   <Icon color={"gray.500"} as={ImStatsDots} fontSize={"3xl"} />
                   <Heading color={"gray.500"} fontSize={"2xl"} px="5">
-                    {(response.packageData?.type??PackageRegistries.github).toUpperCase()} Stats
+                    {(
+                      response.packageData?.type ?? PackageRegistries.github
+                    ).toUpperCase()}{" "}
+                    Stats
                   </Heading>
                 </HStack>
                 <TableContainer>
@@ -291,7 +298,10 @@ const Repo: NextPage = () => {
                         title="Weekly Downloads"
                         value={response.packageData?.weeklyDownloads}
                         status={
-                          response.packageData?.weeklyDownloads < downloadsWeekly
+                          response.packageData.weeklyDownloads === undefined
+                            ? false
+                            : response.packageData?.weeklyDownloads <
+                              downloadsWeekly
                         }
                       />
                       <TableRowComponent
@@ -299,8 +309,10 @@ const Repo: NextPage = () => {
                         title="Release Count"
                         value={response.packageData?.versionReleaseCount}
                         status={
-                          response.packageData?.versionReleaseCount <
-                          releaseVersionCount
+                          response.packageData.versionReleaseCount === undefined
+                            ? false
+                            : response.packageData?.versionReleaseCount <
+                              releaseVersionCount
                         }
                       />
                       <TableRowComponent

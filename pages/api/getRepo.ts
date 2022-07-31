@@ -10,6 +10,15 @@ import {
   PackageData,
 } from "../../utils/package";
 import { getRepoData, RepoData } from "../../utils/repo";
+import {
+  downloadsWeekly,
+  forksCount,
+  latestReleaseVersionTime,
+  originalReleaseTime,
+  releaseVersionCount,
+  starsCount,
+  watchersCount,
+} from "../../utils/metrics";
 
 export enum PackageRegistries {
   npm = "npm",
@@ -21,6 +30,7 @@ export enum PackageRegistries {
 export type RepoAnalysis = {
   packageData: PackageData;
   repoData: RepoData;
+  analysis: { totalParams: number; goodParams: number };
 };
 
 export default async function handler(
@@ -39,7 +49,42 @@ export default async function handler(
         : packageData?.gitUrl!;
     repoData = await getRepoData(packageData?.gitUrl ?? url);
   }
-  res.status(200).json({ packageData, repoData } as RepoAnalysis);
+  let analysis = {
+    totalParams: 9,
+    goodParams: 0,
+  };
+  if (repoData.forksCount !== undefined && repoData.forksCount >= forksCount)
+    analysis.goodParams++;
+  if (repoData.isForked !== undefined && !repoData.isForked)
+    analysis.goodParams++;
+  if (repoData.stars !== undefined && repoData.stars >= starsCount)
+    analysis.goodParams++;
+  if (repoData.watchers !== undefined && repoData.watchers >= watchersCount)
+    analysis.goodParams++;
+
+  if (packageData?.gitUrlExists !== undefined && packageData.gitUrlExists)
+    analysis.goodParams++;
+  if (
+    packageData?.originalReleaseDate !== undefined &&
+    !checkIfOldEnough(packageData?.originalReleaseDate!)
+  )
+    analysis.goodParams++;
+  if (
+    packageData?.latestReleaseDate !== undefined &&
+    !checkIfOldVersion(packageData?.latestReleaseDate)
+  )
+    analysis.goodParams++;
+  if (
+    packageData?.versionReleaseCount !== undefined &&
+    packageData.versionReleaseCount >= releaseVersionCount
+  )
+    analysis.goodParams++;
+  if (
+    packageData?.weeklyDownloads !== undefined &&
+    packageData.weeklyDownloads >= downloadsWeekly
+  )
+    analysis.goodParams++;
+  res.status(200).json({ packageData, repoData, analysis } as RepoAnalysis);
 }
 
 async function getPackageData(
@@ -69,3 +114,19 @@ function getPackageNameFromUrl(link: string): string {
     ? linkSplit[linkSplit.length - 1]
     : linkSplit[linkSplit.length - 2];
 }
+
+export const checkIfOldVersion = (latestReleaseDate: Date): boolean => {
+  const date1 = new Date(latestReleaseDate).getTime();
+  const date2 = new Date().getTime();
+  const diff = ((date2 - date1) / 60) * 60 * 24 * 30;
+  if (diff > latestReleaseVersionTime) return false;
+  else return true;
+};
+
+export const checkIfOldEnough = (releaseDate: Date): boolean => {
+  const date1 = new Date(releaseDate).getTime();
+  const date2 = new Date().getTime();
+  const diff = ((date2 - date1) / 60) * 60 * 24 * 30 * 12;
+  if (diff > originalReleaseTime) return false;
+  else return true;
+};

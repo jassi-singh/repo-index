@@ -1,7 +1,7 @@
 import { Octokit } from "octokit";
 
 const octokit = new Octokit({
-  auth: "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",
+  auth: process.env.AUTH,
 });
 
 export type RepoData = {
